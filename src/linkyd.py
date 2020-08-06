@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, flash, request, render_template, redirect, url_for, make_response
+from flask import Flask, flash, request, render_template, redirect, url_for
+from flask import make_response
 from link import Link, LinkCollection
 
 app = Flask(__name__)
@@ -11,7 +12,9 @@ links = LinkCollection()
 
 @app.route('/', methods=['GET'])
 def webapp_index():
-    return render_template('index.html', links=links.items(), name=request.cookies.get('name'))
+    name = request.cookies.get('name')
+    return render_template('index.html', links=links.items(), name=name)
+
 
 @app.route('/add', methods=['POST'])
 def webapp_add():
@@ -31,10 +34,10 @@ def webapp_add():
         resp.set_cookie('name', form['name'])
     return resp
 
+
 @app.route('/delete/<int:link_id>', methods=['GET'])
 def webapp_delete(link_id):
     try:
-        link = links[link_id]
         del links[link_id]
     except IndexError:
         flash('Could not delete the link', 'danger')
