@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>linkyd</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width; initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    </head>
+    <body>
+        <header class="container">
+            <h1>linkyd</h1>
+        </header>
+        <section class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message | safe }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+            <form method="post" action="{{ url_for('webapp_add') }}">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>URI</th>
+                            <th>Added</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input name="name" placeholder="Type name" value="{{ name if name else '' }}"{% if not name %} autofocus{% endif %}>
+                            </td>
+                            <td>
+                                <input name="uri" placeholder="Type uri"{% if name %} autofocus{% endif %}>
+                            </td>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-primary type="submit">Add link</button>
+                            </td>
+                        </tr>
+                        {% for (id, link) in links %}
+                            <tr>
+                                <td>{{ link.name }}</td>
+                                <td><a href="{{ link.display_uri() }}">{{ link.uri }}</a></td>
+                                <td>{{ link.added.strftime('%c') }}</td>
+                                <td>
+                                    <a class="btn btn-danger" href="{{ url_for('webapp_delete', link_id=id) }}">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+        </section>
+    </body>
+</html>
