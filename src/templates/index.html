@@ -5,6 +5,24 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width; initial-scale=1">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <style>
+            td {
+              display: block;
+            }
+
+            @media screen and (min-width: 768px) {
+              td {
+                display: table-cell;
+              }
+            }
+
+            thead th {
+                position: sticky;
+                top: 0;
+                border-top: 0;
+                background-color: white;
+            }
+        </style>
     </head>
     <body>
         <header class="container">
@@ -19,9 +37,9 @@
         {% endif %}
         {% endwith %}
             <form method="post" action="{{ url_for('webapp_add') }}">
-                <table class="table">
+                <table class="table table-striped table-hover">
                     <thead>
-                        <tr>
+                        <tr class="d-none d-md-table-row">
                             <th>Name</th>
                             <th>URI</th>
                             <th>Added</th>
@@ -31,22 +49,33 @@
                     <tbody>
                         <tr>
                             <td>
-                                <input name="name" placeholder="Type name" value="{{ name if name else '' }}"{% if not name %} autofocus{% endif %}>
+                                <h5 class="d-md-none">Name</h5>
+                                <input class="w-100" name="name" placeholder="Type name" value="{{ name if name else '' }}"{% if not name %} autofocus{% endif %}>
                             </td>
-                            <td>
-                                <input name="uri" placeholder="Type uri"{% if name %} autofocus{% endif %}>
+                            <td colspan="2">
+                                <h5 class="d-md-none">URI</h5>
+                                <input class="w-100" name="uri" placeholder="Type uri"{% if name %} autofocus{% endif %}>
                             </td>
-                            <td></td>
                             <td>
                                 <button class="btn btn-primary type="submit">Add link</button>
                             </td>
                         </tr>
                         {% for (id, link) in links %}
                             <tr>
-                                <td>{{ link.name }}</td>
-                                <td><a href="{{ link.display_uri() }}">{{ link.uri }}</a></td>
-                                <td>{{ link.added.strftime('%c') }}</td>
                                 <td>
+                                    <h5 class="d-md-none">Name</h5>
+                                    {{ link.name }}
+                                </td>
+                                <td>
+                                    <h5 class="d-md-none">URI</h5>
+                                    <a href="{{ link.display_uri() }}">{{ link.uri }}</a>
+                                </td>
+                                <td>
+                                    <h5 class="d-md-none">Added</h5>
+                                    {{ link.added.strftime('%c') }}
+                                </td>
+                                <td>
+                                    <h5 class="d-md-none">Actions</h5>
                                     <a class="btn btn-danger" href="{{ url_for('webapp_delete', link_id=id) }}">Delete</a>
                                 </td>
                             </tr>
