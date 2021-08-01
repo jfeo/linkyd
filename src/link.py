@@ -80,9 +80,8 @@ class LinkCollection():
         return links
 
     @staticmethod
-    def load():
-        with open("dump.json", "r") as dump_file:
-            return LinkCollection.parse(load(dump_file))
+    def load(dump_file):
+        return LinkCollection.parse(load(dump_file))
     
     def dump(self):
         with self.lock:

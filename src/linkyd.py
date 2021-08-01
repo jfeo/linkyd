@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, flash, request, render_template, redirect, url_for
+from flask import Flask, flash, request, render_template, redirect, url_for, jsonify
 from flask import make_response
 from link import Link, LinkCollection
 from text import TEXT
@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 try:
-    links = LinkCollection.load()
+    links = LinkCollection.load(os.open('dump.json', 'r'))
     os.remove("dump.json")
 except:
     links = LinkCollection()
@@ -60,6 +60,27 @@ def webapp_dump():
     finally:
         return redirect(url_for('webapp_index'))
 
+@app.route('/restore', methods=['GET'])
+def webapp_restore():
+    return render_template('restore.html', TEXT=TEXT)
+
+@app.route('/restore', methods=['POST'])
+def webapp_post_restore():
+    global links
+    if "dumpFile" not in request.files:
+        flash(TEXT['FLASH_RESTORE_NO_FILE'], 'danger')
+        return redirect(url_for('webapp_restore'))
+    
+    dumpFile = request.files['dumpFile']
+    try:
+        loaded_links = LinkCollection.load(dumpFile)
+        links = loaded_links
+        flash(TEXT['FLASH_RESTORE_SUCCESS'], 'success')
+        return redirect(url_for('webapp_index'))
+    except Exception as e:
+        flash(TEXT['FLASH_RESTORE_ERROR'].format(repr(e)), 'danger')
+        return redirect(url_for('webapp_restore'))
+
 @app.route('/api/links', methods=['GET'])
 def get_links():
     return {
@@ -89,3 +110,7 @@ def delete_link(link_id):
     except KeyError:
         return {'message': TEXT['REST_MSG_DELETE_ERROR']}
     return {'message': TEXT['REST_MSG_DELETE_SUCCESS'], 'link': link.serialize()}
+
+@app.route('/api/dump', methods=['GET'])
+def get_dump():
+    return jsonify(links.serialize())

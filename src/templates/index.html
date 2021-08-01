@@ -26,7 +26,11 @@
     </head>
     <body>
         <header class="container">
-            <h1>linkyd <a href="/dump" class="btn btn-secondary">Dump database</a></h1>
+            <h1><a href="/">linkyd</a>
+                <a href="/dump" class="btn btn-secondary">Store dump on server</a>
+                <a href="/api/dump" class="btn btn-secondary" download="dump.json">Download dump</a>
+                <a href="/restore" class="btn btn-secondary">Restore a downloaded dump</a>
+            </h1>
         </header>
         <section class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
