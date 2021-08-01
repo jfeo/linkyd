@@ -4,12 +4,16 @@ from flask import Flask, flash, request, render_template, redirect, url_for
 from flask import make_response
 from link import Link, LinkCollection
 from text import TEXT
+import os
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
-links = LinkCollection()
-
+try:
+    links = LinkCollection.load()
+    os.remove("dump.json")
+except:
+    links = LinkCollection()
 
 @app.route('/', methods=['GET'])
 def webapp_index():
@@ -46,6 +50,15 @@ def webapp_delete(link_id):
     flash(TEXT['FLASH_DELETE_SUCCESS'], 'success')
     return redirect(url_for('webapp_index'))
 
+@app.route('/dump', methods=['GET'])
+def webapp_dump():
+    try:
+        links.dump()
+        flash(TEXT['FLASH_DUMP_SUCCESS'], 'success')
+    except Exception as e:
+        flash(TEXT['FLASH_DUMP_ERROR'].format(repr(e)), 'danger')
+    finally:
+        return redirect(url_for('webapp_index'))
 
 @app.route('/api/links', methods=['GET'])
 def get_links():
@@ -53,7 +66,6 @@ def get_links():
         'links': list([link.serialize() for (link_id, link) in links.items()]),
         'count': len(links)
     }
-
 
 @app.route('/api/links', methods=['POST'])
 def post_links():

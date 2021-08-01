@@ -5,6 +5,8 @@ TEXT = {
     'FLASH_ADDED_SUCCESS': 'Added the link! Hurray!',
     'FLASH_DELETE_ERROR': 'An error occured deleting the link.',
     'FLASH_DELETE_SUCCESS': 'Deleted the link! Hurray!',
+    'FLASH_DUMP_SUCCESS': 'Dumped the database! It will be loaded and removed on next reset.',
+    'FLASH_DUMP_ERROR': '<p>An error occured when dumping the database! Sorry :-(</p><pre>{}</pre>',
     'WEB_ADD': 'Add link',
     'WEB_DELETE': 'Delete',
     'WEB_NAME': 'Name',
@@ -15,5 +17,5 @@ TEXT = {
     'REST_MSG_JSON_MISSING': 'missing required value \'{}\'',
     'REST_MSG_ADDED_SUCCESS': 'successfully added',
     'REST_MSG_DELETE_SUCCESS': 'successfully deleted',
-    'REST_MSG_DELETE_ERROR': 'error deleting'
+    'REST_MSG_DELETE_ERROR': 'error deleting',
 }

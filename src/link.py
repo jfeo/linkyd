@@ -9,7 +9,7 @@ This module contains the Link and LinkCollection classes.
 
 from datetime import datetime
 from threading import Lock
-
+from json import dump, load
 
 class Link:
     """A link object that has been shared on the server.
@@ -37,6 +37,13 @@ class Link:
             'name': self.name,
             'added': self.added.isoformat()
         }
+    
+    @staticmethod
+    def parse(dump):
+        link = Link(dump["uri"], dump["name"])
+        link.id = dump["id"]
+        link.added = datetime.fromisoformat(dump["added"])
+        return link
 
 
 class LinkCollection():
@@ -61,6 +68,26 @@ class LinkCollection():
 
     def items(self):
         return self.links.items()
+    
+    def serialize(self):
+        return [self[link_id].serialize() for link_id in self]
+    
+    @staticmethod
+    def parse(dump):
+        links = LinkCollection()
+        for link in dump:
+            links.append(Link.parse(link))
+        return links
+
+    @staticmethod
+    def load():
+        with open("dump.json", "r") as dump_file:
+            return LinkCollection.parse(load(dump_file))
+    
+    def dump(self):
+        with self.lock:
+            with open("dump.json", "w") as dump_file:
+                dump(self.serialize(), dump_file)
 
     def __getitem__(self, link_id: int):
         return self.links[link_id]
