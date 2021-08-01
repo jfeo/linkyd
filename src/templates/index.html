@@ -60,7 +60,7 @@
                                 <button class="btn btn-primary type="submit">Add link</button>
                             </td>
                         </tr>
-                        {% for (id, link) in links %}
+                        {% for (id, link) in links | sort(reverse=True) %}
                             <tr>
                                 <td>
                                     <h5 class="d-md-none">{{ TEXT['WEB_NAME'] }}</h5>
