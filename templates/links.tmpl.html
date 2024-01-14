@@ -1,0 +1,11 @@
+{{define "links" -}}
+<div id="linky-links">
+    {{- range .Links}}
+    <div class="link">
+        <button class="delete" hx-delete="/links/{{.Id}}" hx-target="#linky-links" hx-swap="outerHTML">Delete</button>
+        <a href="{{.Url}}">{{.Title}}</a>
+        <span class="url">{{.Url}}</span>
+    </div>
+    {{- end}}
+</div>
+{{- end}}

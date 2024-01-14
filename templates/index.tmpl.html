@@ -1,0 +1,65 @@
+{{define "index" -}}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>linky</title>
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <style>
+            * {
+                font-family: monospace;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                padding: 1em;
+            }
+
+            #linky-links {
+                margin-top: 1em;
+                margin-bottom: 1em;
+            }
+
+            #linky-links .link {
+                padding: 1px 0px;
+            }
+
+            button {
+                border: 1px solid black;
+                border-radius: 3px;
+                padding: 0px 2px;
+                cursor: pointer;
+            }
+
+            button.delete {
+                background-color: #d21b1b;
+            }
+
+            
+            button.delete:hover {
+                background-color: red;
+            }
+
+            button.delete:active {
+                background-color: #b82020;
+            }
+
+            .url {
+                color: #999
+            }
+        </style>
+    </head>
+    <body>
+        <h1>linky</h1>
+        {{ template "links" . }}
+
+        <div>
+            <form hx-post="/links" hx-target="#linky-links">
+                <input name="title" type="text" placeholder="title...">
+                <input name="url" type="text" placeholder="url...">
+                <button hx-post="/links">add link</button>  
+            </form>
+        </div>
+    </body>
+</html>
+{{- end}}
