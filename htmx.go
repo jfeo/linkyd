@@ -36,6 +36,7 @@ func (b *HTMXBackend) Create() {
 
 	linkURL := b.request.Form.Get("url")
 	linkTitle := b.request.Form.Get("title")
+	linkUser := b.request.Form.Get("user")
 
 	if linkURL == "" {
 		b.writer.WriteHeader(400)
@@ -52,9 +53,18 @@ func (b *HTMXBackend) Create() {
 		return
 	}
 
-	b.linky.CreateLink(linkURL, linkTitle)
+	b.linky.CreateLink(linkURL, linkTitle, linkUser)
 
-	if err := b.templateData.ExecuteTemplate(b.writer, "links", b.linky); err != nil {
+	var templateData any
+	if linkUser == "" {
+		templateData = b.linky
+	} else {
+		templateData = b.linky.AsUser(linkUser)
+	}
+
+	slog.Info("rendering create template %#v", templateData)
+
+	if err := b.templateData.ExecuteTemplate(b.writer, "links", templateData); err != nil {
 		b.writer.WriteHeader(http.StatusInternalServerError)
 	}
 }
@@ -69,5 +79,12 @@ func (b *HTMXBackend) Delete(id string) {
 func (b *HTMXBackend) List() {
 	if err := b.templateData.ExecuteTemplate(b.writer, "index", b.linky); err != nil {
 		b.writer.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+func (b *HTMXBackend) As(user string) {
+	if err := b.templateData.ExecuteTemplate(b.writer, "asuser", b.linky.AsUser(user)); err != nil {
+		b.writer.WriteHeader(http.StatusInternalServerError)
+		slog.Error("error writing asuser template", slog.Any("error", err))
 	}
 }

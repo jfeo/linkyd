@@ -15,6 +15,15 @@ func main() {
 		b.List()
 	})
 
+	http.HandleFunc("/as/", func(w http.ResponseWriter, r *http.Request) {
+		b := GetBackend(&linky, w, r)
+		if asUser, err := getPathSegment(r, 2); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			b.As(asUser)
+		}
+	})
+
 	http.HandleFunc("/links", func(w http.ResponseWriter, r *http.Request) {
 		b := GetBackend(&linky, w, r)
 
@@ -32,13 +41,13 @@ func main() {
 		b := GetBackend(&linky, w, r)
 
 		if r.Method != "DELETE" {
-			w.WriteHeader(405)
+			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 
-		id, err := getPathId(r, 2)
+		id, err := getPathSegment(r, 2)
 		if err != nil {
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
@@ -48,7 +57,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func getPathId(r *http.Request, argumentIndex int) (string, error) {
+func getPathSegment(r *http.Request, argumentIndex int) (string, error) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != argumentIndex+1 {
 		return "", errors.New("Invalid path")

@@ -17,11 +17,17 @@ type Link struct {
 	ID      string    `json:"id"`
 	URL     string    `json:"url"`
 	Title   string    `json:"title"`
+	User    string    `json:"user"`
 	AddedAt time.Time `json:"addedAt"`
 }
 
 type Linky struct {
 	NextID int             `json:"nextID"`
+	Links  map[string]Link `json:"links"`
+}
+
+type LinkyAsUser struct {
+	AsUser string          `json:"asUser"`
 	Links  map[string]Link `json:"links"`
 }
 
@@ -74,18 +80,24 @@ func getAllSiblingText(sibling *html.Node) string {
 	}
 }
 
-func (l *Linky) CreateLink(url string, title string) Link {
+func (l *Linky) CreateLink(url string, title string, user string) Link {
 	id := strconv.Itoa(l.NextID)
 	if title == "" {
 		gottenTitle, err := GetTitleOfLink(url)
 		if err == nil {
 			title = gottenTitle
+		} else {
+			title = url
 		}
 	}
 
-	l.Links[id] = Link{ID: id, URL: url, Title: title, AddedAt: time.Now()}
+	if user == "" {
+		user = "all"
+	}
+
+	l.Links[id] = Link{ID: id, URL: url, Title: title, User: user, AddedAt: time.Now()}
 	l.NextID++
-	slog.Info("Added link", "ID", id, "URL", url, "Title", title)
+	slog.Info("Added link", "ID", id, "URL", url, "Title", title, "User", user)
 
 	return l.Links[id]
 }
@@ -119,4 +131,19 @@ func (l Linky) SaveLinks() {
 		return
 	}
 	fd.Write(marshalledLinks)
+}
+
+func (l *Linky) AsUser(user string) LinkyAsUser {
+	var links map[string]Link = make(map[string]Link)
+
+	for _, link := range l.Links {
+		if link.User != user {
+			links[link.ID] = link
+		}
+	}
+
+	return LinkyAsUser{
+		AsUser: user,
+		Links:  links,
+	}
 }

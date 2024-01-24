@@ -11,6 +11,7 @@ type LinkyBackend interface {
 	Create()
 	List()
 	Delete(id string)
+	As(user string)
 }
 
 func GetBackend(l *Linky, w http.ResponseWriter, r *http.Request) LinkyBackend {

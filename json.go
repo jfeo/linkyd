@@ -33,6 +33,7 @@ func (b *JSONBackend) Create() {
 	var linkData struct {
 		URL   string `json:"url"`
 		Title string `json:"title,omitempty"`
+		User  string `json:"user,omitempty"`
 	}
 
 	if data, err := io.ReadAll(b.request.Body); err != nil {
@@ -59,7 +60,7 @@ func (b *JSONBackend) Create() {
 		return
 	}
 
-	link := b.linky.CreateLink(linkData.URL, linkData.Title)
+	link := b.linky.CreateLink(linkData.URL, linkData.Title, linkData.User)
 	b.writeSuccess(link)
 }
 
@@ -70,6 +71,10 @@ func (b *JSONBackend) Delete(id string) {
 
 func (b *JSONBackend) List() {
 	b.writeSuccess(b.linky)
+}
+
+func (b *JSONBackend) As(user string) {
+	b.writeSuccess(b.linky.AsUser(user))
 }
 
 func (b *JSONBackend) writeError(msg string) {
