@@ -124,6 +124,7 @@ func (l Linky) SaveLinks() {
 		slog.Error("Could not save links", "error", err)
 		return
 	}
+	defer fd.Close()
 
 	marshalledLinks, err := json.Marshal(l)
 	if err != nil {
@@ -131,8 +132,6 @@ func (l Linky) SaveLinks() {
 		return
 	}
 	fd.Write(marshalledLinks)
-
-	defer fd.Close()
 }
 
 func main() {
