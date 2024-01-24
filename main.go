@@ -1,44 +1,104 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
-	"net/url"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"text/template"
 
-	"feodor.dk/linkyd/templates"
+	"golang.org/x/net/html"
 )
 
-func getId() {
-
-}
-
 type Link struct {
-	Id    string
-	Url   string
-	Title string
+	ID      string    `json:"id"`
+	URL     string    `json:"url"`
+	Title   string    `json:"title"`
+	AddedAt time.Time `json:"addedAt"`
 }
 
 type Linky struct {
-	idIncrement int
-	Links       map[string]Link
+	NextID int             `json:"nextID"`
+	Links  map[string]Link `json:"links"`
 }
 
-func (l *Linky) AddLink(url string, title string) {
-	log.Printf("Adding link ID=%d", l.idIncrement)
-	id := strconv.Itoa(l.idIncrement)
-	l.Links[id] = Link{Id: id, Url: url, Title: title}
-	l.idIncrement++
-	log.Printf("Next ID=%d", l.idIncrement)
+func GetTitleOfLink(url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("could not access link, got status %d", resp.StatusCode)
+	}
+
+	tree, err := html.Parse(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("could not parse link: %w", err)
+	}
+
+	if title, err := getTitleFromHTML(tree); err != nil {
+		return "", err
+	} else {
+		return title, nil
+	}
+
 }
 
-func (l *Linky) RemoveLink(id string) {
-	log.Printf("Removing link %s", id)
+var TitleNotFound = fmt.Errorf("title was not found in html tree")
+
+func getTitleFromHTML(tree *html.Node) (string, error) {
+	if tree == nil {
+		return "", TitleNotFound
+	} else if tree.Type == html.ElementNode && tree.Data == "title" {
+		return getAllSiblingText(tree.FirstChild), nil
+	} else if title, err := getTitleFromHTML(tree.FirstChild); err == nil {
+		return title, nil
+	} else if title, err := getTitleFromHTML(tree.NextSibling); err == nil {
+		return title, nil
+	} else {
+		return "", err
+	}
+}
+
+func getAllSiblingText(sibling *html.Node) string {
+	if sibling == nil {
+		return ""
+	} else if sibling.Type != html.TextNode {
+		return getAllSiblingText(sibling.FirstChild) + getAllSiblingText(sibling.NextSibling)
+	} else {
+		return sibling.Data
+	}
+}
+
+func (l *Linky) CreateLink(url string, title string) Link {
+	id := strconv.Itoa(l.NextID)
+	if title == "" {
+		gottenTitle, err := GetTitleOfLink(url)
+		if err == nil {
+			title = gottenTitle
+		}
+	}
+
+	l.Links[id] = Link{ID: id, URL: url, Title: title, AddedAt: time.Now()}
+	l.NextID++
+	slog.Info("Added link", "ID", id, "URL", url, "Title", title)
+
+	return l.Links[id]
+}
+
+func (l *Linky) DeleteLink(id string) Link {
+	slog.Info("Removing link", "ID", id)
+	link := l.Links[id]
 	delete(l.Links, id)
+	return link
 }
 
 func (l Linky) RenderTemplateOr500(w http.ResponseWriter, r *http.Request, tmpl *template.Template) {
@@ -58,55 +118,59 @@ func getPathId(r *http.Request, argumentIndex int) (string, error) {
 	return parts[argumentIndex], nil
 }
 
+func (l Linky) SaveLinks() {
+	fd, err := os.Create("linky.json")
+	if err != nil {
+		slog.Error("Could not save links", "error", err)
+		return
+	}
+
+	marshalledLinks, err := json.Marshal(l)
+	if err != nil {
+		slog.Error("Could not save links", "error", err)
+		return
+	}
+	fd.Write(marshalledLinks)
+
+	defer fd.Close()
+}
+
 func main() {
-	template := templates.GetTemplateData()
 	linky := Linky{Links: make(map[string]Link)}
-	linky.AddLink("https://google.com", "An evil search engine")
-	linky.AddLink("https://duckduckgo.com", "An ethical search engine")
-	linky.AddLink("https://yahoo.com", "A forgotten search engine")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		template.ExecuteTemplate(w, "index", linky)
+		b := GetBackend(&linky, w, r)
+		b.List()
 	})
 
 	http.HandleFunc("/links", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "POST" {
-			if r.ParseForm() != nil {
-				w.WriteHeader(400)
-				return
-			}
+		b := GetBackend(&linky, w, r)
 
-			var formUrl string = r.Form.Get("url")
-			_, urlErr := url.ParseRequestURI(formUrl)
-			if urlErr != nil {
-				w.WriteHeader(400)
-				return
-			}
-
-			var formTitle string = r.Form.Get("title")
-			if len(strings.Trim(formTitle, " \t\n")) == 0 {
-				w.WriteHeader(400)
-				return
-			}
-
-			linky.AddLink(formUrl, formTitle)
+		switch r.Method {
+		case "POST":
+			b.Create()
+		case "GET":
+			b.List()
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
-		template.ExecuteTemplate(w, "links", linky)
 	})
 
 	http.HandleFunc("/links/", func(w http.ResponseWriter, r *http.Request) {
+		b := GetBackend(&linky, w, r)
+
 		if r.Method != "DELETE" {
 			w.WriteHeader(405)
 			return
 		}
 
-		if id, err := getPathId(r, 2); err != nil {
+		id, err := getPathId(r, 2)
+		if err != nil {
 			w.WriteHeader(400)
-		} else {
-			linky.RemoveLink(id)
+			return
 		}
 
-		template.ExecuteTemplate(w, "links", linky)
+		b.Delete(id)
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
