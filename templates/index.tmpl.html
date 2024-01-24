@@ -49,17 +49,27 @@
             .url {
                 color: #999
             }
+            
+            #add-link {
+                opacity: 1;
+                transition: opacity 200ms ease-in;
+            }
+
+            .htmx-request#add-link{
+                opacity: 0.3;
+                pointer-events: none;
+            }
         </style>
     </head>
     <body>
         <h1>linky<small style="font-size: 1rem;">daemon</small></h1>
         {{ template "links" . }}
 
-        <div>
-            <form hx-post="/links" hx-target="#linky-links">
+        <div id="add-link">
+            <form hx-post="/links" hx-indicator="#add-link" hx-target="#linky-links">
                 <input name="title" type="text" placeholder="title...">
                 <input name="url" type="text" placeholder="url...">
-                <button hx-post="/links">add link</button>  
+                <button>add link</button>
             </form>
         </div>
     </body>
