@@ -2,13 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"text/template"
 	"time"
 
@@ -105,15 +103,6 @@ func (l Linky) RenderTemplateOr500(w http.ResponseWriter, r *http.Request, tmpl 
 	if err != nil {
 		r.Response.StatusCode = 500
 	}
-}
-
-func getPathId(r *http.Request, argumentIndex int) (string, error) {
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != argumentIndex+1 {
-		return "", errors.New("Invalid path")
-	}
-
-	return parts[argumentIndex], nil
 }
 
 func (l Linky) SaveLinks() {

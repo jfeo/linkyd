@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func main() {
@@ -44,4 +46,13 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func getPathId(r *http.Request, argumentIndex int) (string, error) {
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) != argumentIndex+1 {
+		return "", errors.New("Invalid path")
+	}
+
+	return parts[argumentIndex], nil
 }
