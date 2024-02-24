@@ -7,19 +7,21 @@ import (
 	"net/http"
 	"strings"
 
+	"feodor.dk/linkyd/backend"
+	"feodor.dk/linkyd/linky"
 	"feodor.dk/linkyd/static"
 )
 
 func main() {
-	linky := Linky{Links: make(map[string]Link)}
+	linky := linky.New()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		b := GetBackend(&linky, w, r)
+		b := backend.Get(&linky, w, r)
 		b.List()
 	})
 
 	http.HandleFunc("/as/", func(w http.ResponseWriter, r *http.Request) {
-		b := GetBackend(&linky, w, r)
+		b := backend.Get(&linky, w, r)
 		if asUser, err := getPathSegment(r, 2); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
@@ -28,7 +30,7 @@ func main() {
 	})
 
 	http.HandleFunc("/links", func(w http.ResponseWriter, r *http.Request) {
-		b := GetBackend(&linky, w, r)
+		b := backend.Get(&linky, w, r)
 
 		switch r.Method {
 		case "POST":
@@ -41,7 +43,7 @@ func main() {
 	})
 
 	http.HandleFunc("/links/", func(w http.ResponseWriter, r *http.Request) {
-		b := GetBackend(&linky, w, r)
+		b := backend.Get(&linky, w, r)
 
 		if r.Method != "DELETE" {
 			w.WriteHeader(http.StatusMethodNotAllowed)

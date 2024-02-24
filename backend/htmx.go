@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"fmt"
@@ -8,17 +8,18 @@ import (
 	"strings"
 	"text/template"
 
+	"feodor.dk/linkyd/linky"
 	"feodor.dk/linkyd/templates"
 )
 
 type HTMXBackend struct {
 	templateData *template.Template
-	linky        *Linky
+	linky        *linky.Linky
 	writer       http.ResponseWriter
 	request      *http.Request
 }
 
-func NewHTMXBackend(l *Linky, w http.ResponseWriter, r *http.Request) *HTMXBackend {
+func NewHTMXBackend(l *linky.Linky, w http.ResponseWriter, r *http.Request) *HTMXBackend {
 	return &HTMXBackend{
 		templateData: templates.GetTemplateData(),
 		linky:        l,
@@ -62,7 +63,7 @@ func (b *HTMXBackend) Create() {
 		templateData = b.linky.AsUser(linkUser)
 	}
 
-	slog.Info("rendering create template %#v", templateData)
+	slog.Debug("rendering create template", slog.Any("templateData", templateData))
 
 	if err := b.templateData.ExecuteTemplate(b.writer, "links", templateData); err != nil {
 		b.writer.WriteHeader(http.StatusInternalServerError)

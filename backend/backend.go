@@ -1,8 +1,10 @@
-package main
+package backend
 
 import (
 	"errors"
 	"net/http"
+
+	"feodor.dk/linkyd/linky"
 )
 
 var UnsupportedContentType = errors.New("unsupported content type")
@@ -14,7 +16,7 @@ type LinkyBackend interface {
 	As(user string)
 }
 
-func GetBackend(l *Linky, w http.ResponseWriter, r *http.Request) LinkyBackend {
+func Get(l *linky.Linky, w http.ResponseWriter, r *http.Request) LinkyBackend {
 	switch r.Header.Get("Content-Type") {
 	case "application/json":
 		return NewJSONBackend(l, w, r)

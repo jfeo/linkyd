@@ -1,4 +1,4 @@
-package main
+package linky
 
 import (
 	"encoding/json"
@@ -29,6 +29,12 @@ type Linky struct {
 type LinkyAsUser struct {
 	AsUser string          `json:"asUser"`
 	Links  map[string]Link `json:"links"`
+}
+
+func New() Linky {
+	return Linky{
+		Links: make(map[string]Link),
+	}
 }
 
 func GetTitleOfLink(url string) (string, error) {

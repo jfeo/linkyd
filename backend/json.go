@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"encoding/json"
@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strings"
 	"text/template"
+
+	"feodor.dk/linkyd/linky"
 )
 
 type JSONResponse struct {
@@ -19,13 +21,13 @@ type JSONResponse struct {
 
 type JSONBackend struct {
 	templateData *template.Template
-	linky        *Linky
+	linky        *linky.Linky
 	writer       http.ResponseWriter
 	request      *http.Request
 	log          slog.Logger
 }
 
-func NewJSONBackend(linky *Linky, w http.ResponseWriter, r *http.Request) *JSONBackend {
+func NewJSONBackend(linky *linky.Linky, w http.ResponseWriter, r *http.Request) *JSONBackend {
 	return &JSONBackend{linky: linky, writer: w, request: r}
 }
 
