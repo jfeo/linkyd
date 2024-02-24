@@ -2,9 +2,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
+
+	"feodor.dk/linkyd/static"
 )
 
 func main() {
@@ -52,6 +55,17 @@ func main() {
 		}
 
 		b.Delete(id)
+	})
+
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		w.Header().Add("Content-Type", "image/x-icon")
+		w.Header().Add("Content-Length", fmt.Sprintf("%d", len(static.Favicon)))
+		w.Write(static.Favicon)
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
