@@ -1,0 +1,6 @@
+[Service]
+Type=simple
+ExecStart=/opt/linkyd
+
+[Install]
+WantedBy=multi-user.target
