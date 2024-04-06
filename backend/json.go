@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"text/template"
 
 	"feodor.dk/linkyd/linky"
 )
@@ -20,14 +19,12 @@ type JSONResponse struct {
 }
 
 type JSONBackend struct {
-	templateData *template.Template
-	linky        *linky.Linky
-	writer       http.ResponseWriter
-	request      *http.Request
-	log          slog.Logger
+	linky   *linky.LinkService
+	writer  http.ResponseWriter
+	request *http.Request
 }
 
-func NewJSONBackend(linky *linky.Linky, w http.ResponseWriter, r *http.Request) *JSONBackend {
+func NewJSONBackend(linky *linky.LinkService, w http.ResponseWriter, r *http.Request) *JSONBackend {
 	return &JSONBackend{linky: linky, writer: w, request: r}
 }
 
@@ -62,13 +59,19 @@ func (b *JSONBackend) Create() {
 		return
 	}
 
-	link := b.linky.CreateLink(linkData.URL, linkData.Title, linkData.User)
-	b.writeSuccess(link)
+	if link, err := b.linky.CreateLink(linkData.URL, linkData.Title, linkData.User); err != nil {
+		b.writeError(err.Error())
+	} else {
+		b.writeSuccess(link)
+	}
 }
 
 func (b *JSONBackend) Delete(id string) {
-	link := b.linky.DeleteLink(id)
-	b.writeSuccess(link)
+	if link, err := b.linky.DeleteLink(id); err != nil {
+		b.writeError(err.Error())
+	} else {
+		b.writeSuccess(link)
+	}
 }
 
 func (b *JSONBackend) List() {

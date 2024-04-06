@@ -4,16 +4,22 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	"feodor.dk/linkyd/backend"
 	"feodor.dk/linkyd/linky"
+	"feodor.dk/linkyd/linky/link"
 	"feodor.dk/linkyd/static"
 )
 
+var ErrInvalidPath = errors.New("invalid path")
+
+var port int = 8080
+
 func main() {
-	linky := linky.New()
+	linky := linky.New(link.NewInMemoryLinkRepository())
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		b := backend.Get(&linky, w, r)
@@ -70,13 +76,15 @@ func main() {
 		w.Write(static.Favicon)
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	listenAddr := fmt.Sprintf(":%d", port)
+	slog.Info("Starting HTTP listener", slog.String("address", listenAddr))
+	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }
 
 func getPathSegment(r *http.Request, argumentIndex int) (string, error) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != argumentIndex+1 {
-		return "", errors.New("Invalid path")
+		return "", ErrInvalidPath
 	}
 
 	return parts[argumentIndex], nil
