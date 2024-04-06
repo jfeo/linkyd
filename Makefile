@@ -1,12 +1,14 @@
 .PHONY: clean build build-rpi
 
-build/linky:
+SOURCES := $(shell find . -name '*.go')
+
+build/linky: $(SOURCES)
 	@echo Building for local machine
 	go build  -ldflags="-s -w" -o build/linky .
 
-build/linky-rpi:
+build/linky-rpi: $(SOURCES)
 	@echo Building for raspberry pi
-	GOARCH=arm GOOS=linux go build  -ldflags="-s -w" -o build/linky-rpi .
+	GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -o build/linky-rpi .
 
 rpi: build/linky-rpi
 
