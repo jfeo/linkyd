@@ -48,8 +48,12 @@ func (r *InMemoryLinkRepository) Create(link Link) (Link, error) {
 	defer r.lock.Unlock()
 
 	link.ID = fmt.Sprintf("%d", id)
-	link.AddedAt = time.Now()
+	if link.AddedAt.IsZero() {
+		link.AddedAt = time.Now()
+	}
+
 	r.links[link.ID] = link
+
 	return link, nil
 }
 
