@@ -114,6 +114,8 @@ func main() {
 		if err := loadLinks(repo); err != nil {
 			println("Error occured loading links from file:", err.Error())
 			os.Exit(1)
+		} else {
+			println("Loaded links from", loadFile)
 		}
 	}
 
