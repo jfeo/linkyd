@@ -75,7 +75,7 @@ func (b *JSONBackend) Delete(id string) {
 }
 
 func (b *JSONBackend) List() {
-	b.writeSuccess(b.linky)
+	b.writeSuccess(b.linky.All())
 }
 
 func (b *JSONBackend) As(user string) {
