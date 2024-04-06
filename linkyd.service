@@ -1,6 +1,6 @@
 [Service]
 Type=simple
-ExecStart=/opt/linkyd
+ExecStart=/home/feo/linky-start.sh
 
 [Install]
 WantedBy=multi-user.target
