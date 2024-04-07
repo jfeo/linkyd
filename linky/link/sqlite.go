@@ -61,7 +61,9 @@ func (r *SQLiteLinkRepository) AsUser(user string) []Link {
 }
 
 func (r *SQLiteLinkRepository) Create(link Link) (Link, error) {
-	link.AddedAt = time.Now()
+	if link.AddedAt.IsZero() {
+		link.AddedAt = time.Now()
+	}
 
 	if linkUuid, err := uuid.NewRandom(); err != nil {
 		return link, err
