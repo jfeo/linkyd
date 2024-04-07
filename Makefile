@@ -8,7 +8,7 @@ build/linky: $(SOURCES)
 
 build/linky-rpi: $(SOURCES)
 	@echo Building for raspberry pi
-	GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -o build/linky-rpi .
+	GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -ldflags="-s -w" -o build/linky-rpi .
 
 rpi: build/linky-rpi
 
