@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}{{end}}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        * {
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            padding: 1em;
+        }
+
+        #linky-links {
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
+
+        #linky-links .link {
+            padding: 1px 0px;
+        }
+
+        button {
+            border: 1px solid black;
+            border-radius: 3px;
+            padding: 0px 2px;
+            cursor: pointer;
+        }
+
+        button.delete {
+            background-color: #d21b1b;
+        }
+
+
+        button.delete:hover {
+            background-color: red;
+        }
+
+        button.delete:active {
+            background-color: #b82020;
+        }
+
+        .url {
+            color: #999
+        }
+
+        #add-link {
+            opacity: 1;
+            transition: opacity 200ms ease-in;
+        }
+
+        .htmx-request#add-link {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>linky<small style="font-size: 1rem;">daemon</small></h1>
+    {{- block "content" .}}{{end}}
+</body>
+
+</html>

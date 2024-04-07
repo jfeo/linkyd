@@ -13,22 +13,24 @@ import (
 )
 
 type HTMXBackend struct {
-	templateData *template.Template
-	linky        *linky.LinkService
-	writer       http.ResponseWriter
-	request      *http.Request
+	templates templates.Templates
+	linky     *linky.LinkService
+	writer    http.ResponseWriter
+	request   *http.Request
 }
 
 func NewHTMXBackend(l *linky.LinkService, w http.ResponseWriter, r *http.Request) *HTMXBackend {
 	return &HTMXBackend{
-		templateData: templates.GetTemplateData(),
-		linky:        l,
-		writer:       w,
-		request:      r,
+		templates: templates.LoadTemplates(),
+		linky:     l,
+		writer:    w,
+		request:   r,
 	}
 }
 
 func (b *HTMXBackend) Create() {
+	slog.Info("htmx create")
+
 	if err := b.request.ParseForm(); err != nil {
 		slog.Error("invalid form data", "error", err)
 		b.writer.WriteHeader(400)
@@ -57,39 +59,47 @@ func (b *HTMXBackend) Create() {
 
 	b.linky.CreateLink(linkURL, linkTitle, linkUser)
 
-	var templateData any
+	var data any
 	if linkUser == "" {
-		templateData = b.linky.All()
+		data = b.linky.All()
 	} else {
-		templateData = b.linky.AsUser(linkUser)
+		data = b.linky.AsUser(linkUser)
 	}
 
-	if err := b.executeTemplate("links", templateData); err != nil {
+	if err := b.executeTemplate(b.templates.Links, data); err != nil {
 		b.writer.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func (b *HTMXBackend) Delete(id string) {
+	slog.Info("htmx create")
+
 	b.linky.DeleteLink(id)
-	if err := b.executeTemplate("links", b.linky.All()); err != nil {
+	if err := b.executeTemplate(b.templates.Links, b.linky.All()); err != nil {
 		b.writer.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func (b *HTMXBackend) List() {
-	if err := b.executeTemplate("index", b.linky.All()); err != nil {
+	slog.Info("htmx list")
+
+	if err := b.executeTemplate(b.templates.List, b.linky.All()); err != nil {
 		b.writer.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func (b *HTMXBackend) As(user string) {
-	if err := b.executeTemplate("asuser", b.linky.AsUser(user)); err != nil {
+	slog.Info("htmx as")
+
+	if err := b.executeTemplate(b.templates.AsUser, b.linky.AsUser(user)); err != nil {
 		b.writer.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (b *HTMXBackend) executeTemplate(name string, data any) error {
-	err := b.templateData.ExecuteTemplate(b.writer, name, data)
+func (b *HTMXBackend) executeTemplate(template *template.Template, data any) error {
+	err := template.Execute(b.writer, data)
+	name := template.Name()
+
 	slog.Debug(
 		"executing template",
 		slog.String("name", name),

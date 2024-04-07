@@ -1,5 +1,5 @@
-{{define "links" -}}
 <div id="linky-links">
+    {{- if .Links}}
     {{- range .Links}}
     <div class="link">
         <button class="delete" hx-confirm="Are you sure you want to delete the link?" hx-delete="/links/{{.ID}}" hx-target="#linky-links" hx-swap="outerHTML">Delete</button>
@@ -7,6 +7,8 @@
         <span class="url">{{.URL}}</span>
         <small class="user">{{.User}}</small>
     </div>
-    {{- end}}
+    {{- end -}}
+    {{- else -}}
+    <p>There are no links yet. Submit one!</p>
+    {{- end -}}
 </div>
-{{- end}}
