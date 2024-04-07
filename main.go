@@ -15,6 +15,8 @@ import (
 	"feodor.dk/linkyd/linky"
 	"feodor.dk/linkyd/linky/link"
 	"feodor.dk/linkyd/static"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var ErrInvalidPath = errors.New("invalid path")
@@ -104,19 +106,24 @@ func validateLoadFile(arg string) error {
 }
 
 func main() {
-	repo := link.NewInMemoryLinkRepository()
-	linky := linky.New(repo)
-	if err := parseCliArgs(); err != nil {
-		printHelp()
-		os.Exit(1)
-	}
-
 	if help {
 		printHelp()
 		os.Exit(0)
 	}
 
 	configureSlog()
+
+	repo, err := link.NewSQLiteLinkRepository()
+	if err != nil {
+		slog.Error("could not create sqlite3 repository")
+		os.Exit(1)
+	}
+
+	linky := linky.New(repo)
+	if err := parseCliArgs(); err != nil {
+		printHelp()
+		os.Exit(1)
+	}
 
 	if loadFile != "" {
 		if err := loadLinks(repo); err != nil {
