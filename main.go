@@ -19,9 +19,12 @@ import (
 
 var ErrInvalidPath = errors.New("invalid path")
 
-var help bool
-var port int = 8080
-var loadFile string
+var (
+	help     bool
+	verbose  bool
+	port     int = 8080
+	loadFile string
+)
 
 type ParserState int
 
@@ -71,6 +74,9 @@ func parseFlag(arg string) (ParserState, error) {
 	case "-h", "--help":
 		help = true
 		return ParserStateFlag, nil
+	case "-v", "--verbose":
+		verbose = true
+		return ParserStateFlag, nil
 	default:
 		return ParserStateInvalid, errors.New("invalid flag")
 	}
@@ -109,6 +115,8 @@ func main() {
 		printHelp()
 		os.Exit(0)
 	}
+
+	configureSlog()
 
 	if loadFile != "" {
 		if err := loadLinks(repo); err != nil {
@@ -221,4 +229,14 @@ func printlns(lines ...string) {
 	for _, line := range lines {
 		println(line)
 	}
+}
+
+func configureSlog() {
+	logLevel := slog.LevelInfo
+	if verbose {
+		logLevel = slog.LevelDebug
+	}
+
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel})
+	slog.SetDefault(slog.New(handler))
 }
