@@ -20,12 +20,12 @@ const (
 			title VARCHAR(256),
 			url VARCHAR(512),
 			user VARCHAR(32),
-			addedAt TIMESTAMP,
+			addedAt DATETIME,
 			PRIMARY KEY (id),
 			UNIQUE(uuid)
 		);
 	`
-	asUserQuery = `SELECT uuid, title, url, user, addedAt FROM links WHERE user != ?;`
+	asUserQuery = `SELECT uuid, title, url, user, addedAt FROM links WHERE user != ? ORDER BY addedAt;`
 	insertQuery = `INSERT INTO links (uuid, title, url, user, addedAt) VALUES (?, ?, ?, ?, ?);`
 	deleteQuery = `DELETE FROM links WHERE uuid = ?;`
 )

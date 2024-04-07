@@ -2,6 +2,7 @@
     {{- if .Links}}
     {{- range .Links}}
     <div class="link">
+        <small style="">{{.AddedAt.Format "Jan 02, 15:04 UTC"}}</small>
         <a href="{{.URL}}">{{.Title}}</a>
         <span class="url">{{.URL}}</span>
         <small class="user">{{.User}}</small>
