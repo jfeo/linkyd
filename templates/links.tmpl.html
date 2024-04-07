@@ -2,10 +2,17 @@
     {{- if .Links}}
     {{- range .Links}}
     <div class="link">
-        <button class="delete" hx-confirm="Are you sure you want to delete the link?" hx-delete="/links/{{.ID}}" hx-target="#linky-links" hx-swap="outerHTML">Delete</button>
         <a href="{{.URL}}">{{.Title}}</a>
         <span class="url">{{.URL}}</span>
         <small class="user">{{.User}}</small>
+        <button
+            class="delete"
+            hx-confirm="Are you sure you want to delete the link?"
+            hx-delete="/links/{{.ID}}"
+            hx-target="#linky-links"
+            hx-swap="outerHTML">
+            delete
+        </button>
     </div>
     {{- end -}}
     {{- else -}}
