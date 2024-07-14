@@ -2,17 +2,23 @@
 
 SOURCES := $(shell find . -name '*.go')
 
-build/linky: $(SOURCES)
+TARGET = build/linkyd
+RPI_TARGET = build/linkyd-rpi
+
+$(TARGET): $(SOURCES)
 	@echo Building for local machine
-	go build  -ldflags="-s -w" -o build/linky .
+	go build  -ldflags="-s -w" -o build/linkyd .
 
-build/linky-rpi: $(SOURCES)
+$(RPI_TARGET): $(SOURCES) rpi.Dockerfile
 	@echo Building for raspberry pi
-	GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -ldflags="-s -w" -o build/linky-rpi .
+	docker build -f rpi.Dockerfile -t linkyd-build-rpi .
+	docker rm linkyd-build-rpi >/dev/null 2>&1 || true
+	docker run --name linkyd-build-rpi linkyd-build-rpi
+	docker cp linkyd-build-rpi:/linkyd/build/linkyd-rpi $(RPI_TARGET)
 
-rpi: build/linky-rpi
+rpi: $(RPI_TARGET)
 
-build: build/linky
+build: $(TARGET)
 
 clean:
 	@echo Cleaning
