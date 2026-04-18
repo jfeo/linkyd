@@ -55,10 +55,12 @@ func parseCliArgs() error {
 			if err := parsePort(arg); err != nil {
 				return err
 			}
+			parserState = ParserStateFlag
 		case ParserStateLoadFile:
 			if err := validateLoadFile(arg); err != nil {
 				return err
 			}
+			parserState = ParserStateFlag
 		default:
 			return errors.New("invalid parser state")
 		}
@@ -106,11 +108,6 @@ func validateLoadFile(arg string) error {
 }
 
 func main() {
-	if help {
-		printHelp()
-		os.Exit(0)
-	}
-
 	configureSlog()
 
 	repo, err := link.NewSQLiteLinkRepository()
@@ -119,11 +116,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	linky := linky.New(repo)
 	if err := parseCliArgs(); err != nil {
+		println("Error: " + err.Error())
 		printHelp()
 		os.Exit(1)
 	}
+
+	if help {
+		printHelp()
+		os.Exit(0)
+	}
+
+	linky := linky.New(repo)
 
 	if loadFile != "" {
 		if err := loadLinks(repo); err != nil {
@@ -229,6 +233,7 @@ func printHelp() {
 		"  -h, --help              display this message and exit",
 		"  -l, --load <DUMP FILE>  load a dump of links upon start-up",
 		"  -p, --port <PORT>       specify the port, defaults to 8080",
+		"  -v, --verbose           print more verbose logs",
 	)
 }
 
